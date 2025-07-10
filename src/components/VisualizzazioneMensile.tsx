@@ -4,18 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Printer, Calendar, TrendingUp } from "lucide-react";
+import { Printer, Calendar, TrendingUp, Trash2 } from "lucide-react";
 import { useCorreispettivi } from "@/hooks/useCorreispettivi";
 import { calcolaTotaliMensili, getMesi, getAnni } from "@/utils/calcoliUtils";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
+import { toast } from "sonner";
 
 const VisualizzazioneMensile = () => {
   const currentDate = new Date();
   const [selectedMese, setSelectedMese] = useState(currentDate.getMonth() + 1);
   const [selectedAnno, setSelectedAnno] = useState(currentDate.getFullYear());
   
-  const { getAllCorreispettivi } = useCorreispettivi();
+  const { getAllCorreispettivi, eliminaCorreispettivo } = useCorreispettivi();
   const corrispettivi = getAllCorreispettivi();
   
   const corrispettiviMensili = corrispettivi.filter(c => {
@@ -26,6 +27,11 @@ const VisualizzazioneMensile = () => {
   const totali = calcolaTotaliMensili(corrispettiviMensili);
   const mesi = getMesi();
   const anni = getAnni(corrispettivi);
+
+  const handleCancella = (data: string) => {
+    eliminaCorreispettivo(data);
+    toast.success("Corrispettivo cancellato!");
+  };
 
   const handleStampa = () => {
     const nomeFile = `Registro_Corrispettivi_${selectedMese.toString().padStart(2, '0')}_${selectedAnno}`;
@@ -167,6 +173,7 @@ const VisualizzazioneMensile = () => {
                     <TableHead className="text-right">Contanti (€)</TableHead>
                     <TableHead className="text-right">POS (€)</TableHead>
                     <TableHead className="text-right">Totale (€)</TableHead>
+                    <TableHead className="text-center">Azioni</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -184,6 +191,15 @@ const VisualizzazioneMensile = () => {
                       <TableCell className="text-right font-semibold">
                         €{corrispettivo.totale.toFixed(2)}
                       </TableCell>
+                      <TableCell className="text-center">
+                        <Button 
+                          variant="destructive" 
+                          size="sm"
+                          onClick={() => handleCancella(corrispettivo.data)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                   <TableRow className="bg-blue-50 font-bold">
@@ -191,6 +207,7 @@ const VisualizzazioneMensile = () => {
                     <TableCell className="text-right">€{totali.contanti.toFixed(2)}</TableCell>
                     <TableCell className="text-right">€{totali.pos.toFixed(2)}</TableCell>
                     <TableCell className="text-right">€{totali.totale.toFixed(2)}</TableCell>
+                    <TableCell></TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
